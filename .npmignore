@@ -1,0 +1,42 @@
+# Source files
+packages/
+examples/
+*.ts
+*.tsx
+!*.d.ts
+
+# Config files
+tsconfig.json
+tsup.config.ts
+vite.config.ts
+
+# Development files
+.vscode/
+.idea/
+*.log
+*.lock
+
+# Git
+.git/
+.gitignore
+
+# Dependencies
+node_modules/
+
+# Build artifacts (will be included via package.json files field)
+# dist/ is included in package.json files array
+
+# Documentation (keep README.md, ignore others)
+examples/README.md
+
+# Test files
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+

@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "declaration": true,
+    "declarationMap": true,
+    "outDir": "dist",
+    "strict": true,
+    "jsx": "react-jsx",
+    "moduleResolution": "Bundler",
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@core/*": ["./packages/core/*"],
+      "@react/*": ["./packages/react/*"],
+      "@ui/*": ["./packages/ui/*"]
+    }
+  },
+  "include": ["packages/**/*", "examples/**/*"],
+  "exclude": ["node_modules", "dist"]
+}

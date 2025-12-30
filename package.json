@@ -1,0 +1,81 @@
+{
+  "name": "tablero",
+  "version": "1.0.1",
+  "description": "A type-safe, framework-agnostic data table library with React bindings",
+  "main": "./dist/core.js",
+  "module": "./dist/core.js",
+  "types": "./dist/core.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/core.d.ts",
+      "import": "./dist/core.js",
+      "require": "./dist/core.cjs"
+    },
+    "./core": {
+      "types": "./dist/core.d.ts",
+      "import": "./dist/core.js",
+      "require": "./dist/core.cjs"
+    },
+    "./react": {
+      "types": "./dist/react.d.ts",
+      "import": "./dist/react.js",
+      "require": "./dist/react.cjs"
+    },
+    "./ui": {
+      "types": "./dist/ui.d.ts",
+      "import": "./dist/ui.js",
+      "require": "./dist/ui.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "vite",
+    "preview": "vite preview",
+    "example": "tsx examples/basic-example.ts",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "table",
+    "data-table",
+    "datatable",
+    "react-table",
+    "typescript",
+    "sorting",
+    "pagination",
+    "filtering",
+    "data-grid"
+  ],
+  "author": "Ojas",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ojas-elawadhi/tablero"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": false
+    },
+    "react-dom": {
+      "optional": false
+    }
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.7",
+    "@vitejs/plugin-react": "^4.3.4",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "tsup": "^8.5.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.9.3",
+    "vite": "^6.0.5"
+  }
+}
