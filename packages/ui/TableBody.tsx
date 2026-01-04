@@ -54,6 +54,18 @@ export interface TableBodyProps<TData> {
   /** Whether borders are enabled */
   bordered?: boolean;
   
+  /** Selection enabled */
+  selectionEnabled?: boolean;
+  
+  /** Selection mode */
+  selectionMode?: "single" | "multi";
+  
+  /** Whether a row is selected */
+  isRowSelected?: (rowId: string | number) => boolean;
+  
+  /** Toggle row selection */
+  onToggleRowSelection?: (rowId: string | number) => void;
+  
   /** Additional className */
   className?: string;
 }
@@ -76,6 +88,10 @@ export function TableBody<TData>({
   loadingComponent: LoadingComponent,
   errorComponent: ErrorComponent,
   bordered = true,
+  selectionEnabled = false,
+  selectionMode = "multi",
+  isRowSelected,
+  onToggleRowSelection,
   className = "",
 }: TableBodyProps<TData>) {
   // Loading state
@@ -134,23 +150,60 @@ export function TableBody<TData>({
     <tbody className={`table-x-body ${bordered ? "table-x-body--bordered" : "table-x-body--borderless"} ${className}`}>
       {data.map((row, rowIndex) => {
         const key = getRowKey(row, rowIndex);
+        const rowId = key;
+        const isSelected = selectionEnabled && isRowSelected ? isRowSelected(rowId) : false;
         
-        const cells = columns.map((column, columnIndex) => {
-          const isFirstColumn = columnIndex === 0;
-          const isSticky = stickyFirstColumn && isFirstColumn;
-          
-          return (
-            <TableCell
-              key={column.id}
-              column={column}
-              row={row}
-              rowIndex={rowIndex}
-              columnIndex={columnIndex}
-              renderCell={renderCell}
-              className={`${isSticky ? "table-x-cell--sticky" : ""} ${bordered ? "table-x-cell--bordered" : "table-x-cell--borderless"}`}
-            />
-          );
-        });
+        const cells = [
+          selectionEnabled && (
+            <td
+              key="__selection__"
+              className={`table-x-cell table-x-selection-cell ${
+                stickyFirstColumn ? "table-x-cell--sticky" : ""
+              } ${bordered ? "table-x-cell--bordered" : "table-x-cell--borderless"}`}
+              style={{
+                width: "48px",
+                minWidth: "48px",
+                maxWidth: "48px",
+                textAlign: "center",
+                position: stickyFirstColumn ? "sticky" : undefined,
+                left: stickyFirstColumn ? 0 : undefined,
+                zIndex: stickyFirstColumn ? 1 : undefined,
+                backgroundColor: stickyFirstColumn
+                  ? "var(--table-x-sticky-bg, inherit)"
+                  : undefined,
+              }}
+              role="gridcell"
+            >
+              <input
+                type={selectionMode === "single" ? "radio" : "checkbox"}
+                checked={isSelected}
+                onChange={() => {
+                  onToggleRowSelection?.(rowId);
+                }}
+                aria-label={`Select row ${rowIndex + 1}`}
+                className="table-x-checkbox"
+                name={selectionMode === "single" ? "table-row-selection" : undefined}
+              />
+            </td>
+          ),
+          ...columns.map((column, columnIndex) => {
+            // If selection is enabled, first data column is index 0 (after checkbox)
+            const isFirstColumn = columnIndex === 0;
+            const isSticky = stickyFirstColumn && isFirstColumn;
+            
+            return (
+              <TableCell
+                key={column.id}
+                column={column}
+                row={row}
+                rowIndex={rowIndex}
+                columnIndex={columnIndex}
+                renderCell={renderCell}
+                className={`${isSticky ? "table-x-cell--sticky" : ""} ${bordered ? "table-x-cell--bordered" : "table-x-cell--borderless"}`}
+              />
+            );
+          }),
+        ].filter(Boolean);
 
         if (renderRow) {
           return (

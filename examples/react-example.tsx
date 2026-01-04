@@ -78,6 +78,15 @@ export function DataTableExample() {
     data: users,
     columns,
     pageSize: 5,
+    urlSync: {
+      enabled: true,
+      features: {
+        pagination: true,
+        sorting: true,
+        filtering: true,
+      },
+      debounceMs: 300,
+    },
   });
 
   return (
@@ -174,6 +183,15 @@ export function DataTableExample() {
         {table.sorting.state.direction || ""}
         <br />
         Page: {table.pageIndex + 1} / {table.pageCount}
+        <br />
+        <br />
+        <strong>URL Sync:</strong> Enabled
+        <br />
+        Current URL: <code style={{ fontSize: "11px", wordBreak: "break-all" }}>{typeof window !== "undefined" ? window.location.href : "N/A"}</code>
+        <br />
+        <small style={{ opacity: 0.7 }}>
+          Try sorting, filtering, or changing pages - the URL will update automatically!
+        </small>
       </div>
     </div>
   );

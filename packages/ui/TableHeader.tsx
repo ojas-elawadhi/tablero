@@ -37,6 +37,24 @@ export interface TableHeaderProps<TData> {
   /** Whether borders are enabled */
   bordered?: boolean;
   
+  /** Selection enabled */
+  selectionEnabled?: boolean;
+  
+  /** Selection mode */
+  selectionMode?: "single" | "multi";
+  
+  /** Whether all rows on current page are selected */
+  isAllSelected?: boolean;
+  
+  /** Whether some rows are selected (indeterminate) */
+  isIndeterminate?: boolean;
+  
+  /** Select all handler */
+  onSelectAll?: () => void;
+  
+  /** Deselect all handler */
+  onDeselectAll?: () => void;
+  
   /** Additional className */
   className?: string;
 }
@@ -55,6 +73,12 @@ export function TableHeader<TData>({
   sticky = false,
   stickyFirstColumn = false,
   bordered = true,
+  selectionEnabled = false,
+  selectionMode = "multi",
+  isAllSelected = false,
+  isIndeterminate = false,
+  onSelectAll,
+  onDeselectAll,
   className = "",
 }: TableHeaderProps<TData>) {
   const [resizingColumn, setResizingColumn] = useState<string | null>(null);
@@ -108,8 +132,51 @@ export function TableHeader<TData>({
       }
     >
       <tr role="row">
+        {selectionEnabled && (
+          <th
+            className={`table-x-header-cell table-x-selection-cell ${
+              stickyFirstColumn ? "table-x-header-cell--sticky" : ""
+            } ${bordered ? "table-x-header-cell--bordered" : "table-x-header-cell--borderless"}`}
+            style={{
+              width: "48px",
+              minWidth: "48px",
+              maxWidth: "48px",
+              textAlign: "center",
+              position: stickyFirstColumn ? "sticky" : sticky ? "relative" : undefined,
+              left: stickyFirstColumn ? 0 : undefined,
+              zIndex: stickyFirstColumn ? 12 : sticky ? 10 : undefined,
+              backgroundColor: sticky
+                ? "var(--table-x-header-bg, #f9fafb)"
+                : stickyFirstColumn
+                ? "var(--table-x-sticky-bg, #fff)"
+                : undefined,
+            }}
+            role="columnheader"
+            aria-label="Select all rows"
+          >
+            {selectionMode === "multi" && (
+              <input
+                type="checkbox"
+                checked={isAllSelected}
+                ref={(input) => {
+                  if (input) input.indeterminate = isIndeterminate;
+                }}
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    onSelectAll?.();
+                  } else {
+                    onDeselectAll?.();
+                  }
+                }}
+                aria-label="Select all rows"
+                className="table-x-checkbox"
+              />
+            )}
+          </th>
+        )}
         {columns.map((column, index) => {
-          const isFirstColumn = index === 0;
+          // If selection is enabled, first data column is index 1 (after checkbox)
+          const isFirstColumn = selectionEnabled ? index === 0 : index === 0;
           const isSticky = stickyFirstColumn && isFirstColumn;
           const isSorted = sortState.columnId === column.id;
           const sortDirection = isSorted ? sortState.direction : null;

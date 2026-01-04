@@ -1,6 +1,6 @@
 /**
  * Pagination functionality
- * 
+ *
  * Client-side pagination implementation.
  */
 
@@ -10,13 +10,20 @@
 export interface PaginationState {
   /** Current page index (0-based) */
   pageIndex: number;
-  
+
   /** Number of items per page */
   pageSize: number;
-  
-  // TODO: Add server-side pagination support
-  // totalCount?: number; // For server-side mode
-  // pageCount?: number; // For server-side mode
+
+  /** Total count of items (for server-side mode) */
+  totalCount?: number;
+
+  /** Total number of pages (for server-side mode, calculated from totalCount if provided) */
+  pageCount?: number;
+
+  // TODO: Add cursor-based pagination support
+  // cursor?: string;
+  // nextCursor?: string;
+  // previousCursor?: string;
 }
 
 /**
@@ -33,11 +40,23 @@ export function createInitialPaginationState(
 
 /**
  * Calculate total number of pages
+ *
+ * @param totalItems - Total number of items (client-side) or totalCount (server-side)
+ * @param pageSize - Number of items per page
+ * @param serverPageCount - Pre-calculated page count from server (optional)
+ * @returns Total number of pages
  */
 export function getPageCount(
   totalItems: number,
-  pageSize: number
+  pageSize: number,
+  serverPageCount?: number
 ): number {
+  // Use server-provided page count if available
+  if (serverPageCount !== undefined) {
+    return serverPageCount;
+  }
+
+  // Calculate from total items
   if (pageSize <= 0) return 0;
   return Math.ceil(totalItems / pageSize);
 }
@@ -45,10 +64,7 @@ export function getPageCount(
 /**
  * Get the start index of the current page
  */
-export function getPageStartIndex(
-  pageIndex: number,
-  pageSize: number
-): number {
+export function getPageStartIndex(pageIndex: number, pageSize: number): number {
   return pageIndex * pageSize;
 }
 
@@ -60,7 +76,10 @@ export function getPageEndIndex(
   pageSize: number,
   totalItems: number
 ): number {
-  return Math.min(getPageStartIndex(pageIndex, pageSize) + pageSize, totalItems);
+  return Math.min(
+    getPageStartIndex(pageIndex, pageSize) + pageSize,
+    totalItems
+  );
 }
 
 /**
@@ -76,12 +95,35 @@ export function isValidPageIndex(
 /**
  * Clamp page index to valid range
  */
-export function clampPageIndex(
-  pageIndex: number,
-  totalPages: number
-): number {
+export function clampPageIndex(pageIndex: number, totalPages: number): number {
   if (totalPages === 0) return 0;
   return Math.max(0, Math.min(pageIndex, totalPages - 1));
+}
+
+/**
+ * Get total pages from pagination state
+ * Uses server-provided pageCount if available, otherwise calculates from totalCount or data length
+ */
+export function getTotalPages(
+  pagination: PaginationState,
+  dataLength?: number
+): number {
+  // Use server-provided pageCount if available
+  if (pagination.pageCount !== undefined) {
+    return pagination.pageCount;
+  }
+
+  // Use server-provided totalCount if available
+  if (pagination.totalCount !== undefined) {
+    return getPageCount(pagination.totalCount, pagination.pageSize);
+  }
+
+  // Fall back to data length (client-side)
+  if (dataLength !== undefined) {
+    return getPageCount(dataLength, pagination.pageSize);
+  }
+
+  return 0;
 }
 
 /**
@@ -128,16 +170,31 @@ export function goToPage(
 
 /**
  * Change page size
+ *
+ * @param state - Current pagination state
+ * @param pageSize - New page size
+ * @param totalItems - Total items (for client-side) or use state.totalCount/pageCount (for server-side)
+ * @returns Updated pagination state
  */
 export function setPageSize(
   state: PaginationState,
   pageSize: number,
-  totalItems: number
+  totalItems?: number
 ): PaginationState {
-  const totalPages = getPageCount(totalItems, pageSize);
+  // Calculate total pages
+  const totalPages =
+    state.pageCount !== undefined
+      ? state.pageCount // Use server-provided pageCount
+      : state.totalCount !== undefined
+      ? getPageCount(state.totalCount, pageSize) // Calculate from server totalCount
+      : totalItems !== undefined
+      ? getPageCount(totalItems, pageSize) // Calculate from client data length
+      : 0;
+
   const clampedPageIndex = clampPageIndex(state.pageIndex, totalPages);
-  
+
   return {
+    ...state,
     pageIndex: clampedPageIndex,
     pageSize,
   };
@@ -145,32 +202,37 @@ export function setPageSize(
 
 /**
  * Get paginated slice of data
- * 
- * @param data - Full data array
+ *
+ * @param data - Full data array (or current page data in server mode)
  * @param pagination - Pagination state
- * @returns Paginated data slice
+ * @param serverMode - If true, returns data unchanged (server handles pagination)
+ * @returns Paginated data slice (or original data in server mode)
  */
 export function getPaginatedData<T>(
   data: T[],
-  pagination: PaginationState
+  pagination: PaginationState,
+  serverMode?: boolean
 ): T[] {
+  // In server mode, data is already paginated by the server
+  if (serverMode === true) {
+    return [...data];
+  }
+
+  // Client-side pagination
   const start = getPageStartIndex(pagination.pageIndex, pagination.pageSize);
   const end = getPageEndIndex(
     pagination.pageIndex,
     pagination.pageSize,
     data.length
   );
-  
+
   return data.slice(start, end);
 }
 
 /**
  * Check if there is a next page
  */
-export function hasNextPage(
-  pageIndex: number,
-  totalPages: number
-): boolean {
+export function hasNextPage(pageIndex: number, totalPages: number): boolean {
   return pageIndex < totalPages - 1;
 }
 

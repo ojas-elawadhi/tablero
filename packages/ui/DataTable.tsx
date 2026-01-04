@@ -17,10 +17,12 @@ import { TableBody } from "./TableBody";
 export interface DataTableSlots<TData> {
   /** Loading state component */
   loader?: React.ComponentType;
-  
+
   /** Empty state component */
-  empty?: React.ComponentType<{ columns: import("../core/columns").Column<TData>[] }>;
-  
+  empty?: React.ComponentType<{
+    columns: import("../core/columns").Column<TData>[];
+  }>;
+
   /** Error state component */
   error?: React.ComponentType<{ error: Error | string }>;
 }
@@ -28,63 +30,67 @@ export interface DataTableSlots<TData> {
 export interface DataTableProps<TData> {
   /** Table instance from useDataTable hook */
   table: TableInstance<TData>;
-  
+
   /** Custom slots for loading/empty/error states */
   slots?: DataTableSlots<TData>;
-  
+
   /** Custom cell renderer */
-  renderCell?: (value: unknown, row: TData, column: import("../core/columns").Column<TData>) => React.ReactNode;
-  
+  renderCell?: (
+    value: unknown,
+    row: TData,
+    column: import("../core/columns").Column<TData>
+  ) => React.ReactNode;
+
   /** Custom header renderer */
   renderHeader?: (
     column: import("../core/columns").Column<TData>,
     sortState: import("../core/sorting").SortState
   ) => React.ReactNode;
-  
+
   /** Custom row renderer */
   renderRow?: (
     row: TData,
     index: number,
     cells: React.ReactNode[]
   ) => React.ReactNode;
-  
+
   /** Row key extractor */
   getRowKey?: (row: TData, index: number) => string | number;
-  
+
   /** Whether header is sticky */
   stickyHeader?: boolean;
-  
+
   /** Whether first column is sticky */
   stickyFirstColumn?: boolean;
-  
+
   /** Enable column resizing */
   enableResizing?: boolean;
-  
+
   /** Maximum height for vertical scrolling (in pixels) */
   maxHeight?: number | string;
-  
+
   /** Whether to show borders (default: true) */
   bordered?: boolean;
-  
+
   /** Additional className */
   className?: string;
-  
+
   /** Loading state */
   isLoading?: boolean;
-  
+
   /** Error state */
   error?: Error | string | null;
 }
 
 /**
  * DataTable component
- * 
+ *
  * Main table component that renders a complete data table with all features.
- * 
+ *
  * @example
  * ```tsx
  * const table = useDataTable({ data, columns });
- * 
+ *
  * <DataTable
  *   table={table}
  *   stickyHeader
@@ -118,18 +124,15 @@ export function DataTable<TData>({
   // Track column widths for resizing
   const [columnWidths, setColumnWidths] = useState<Record<string, number>>({});
 
-  const handleResize = useCallback(
-    (columnId: string, width: number) => {
-      setColumnWidths((prev) => ({
-        ...prev,
-        [columnId]: width,
-      }));
-      
-      // TODO: Persist column widths to state/URL/localStorage
-      // TODO: Update column definitions with new widths
-    },
-    []
-  );
+  const handleResize = useCallback((columnId: string, width: number) => {
+    setColumnWidths((prev) => ({
+      ...prev,
+      [columnId]: width,
+    }));
+
+    // TODO: Persist column widths to state/URL/localStorage
+    // TODO: Update column definitions with new widths
+  }, []);
 
   // Apply custom widths to columns
   const columnsWithWidths = table.visibleColumns.map((column) => {
@@ -155,18 +158,26 @@ export function DataTable<TData>({
 
   return (
     <div
-      className={`table-x-container ${bordered ? "table-x-container--bordered" : "table-x-container--borderless"} ${className}`}
-      style={{
-        // CSS variables for theming
-        "--table-x-sticky-bg": "var(--table-x-bg, #fff)",
-        "--table-x-border-color": "var(--table-x-border-color, #e5e7eb)",
-        "--table-x-border-width": "var(--table-x-border-width, 1px)",
-        "--table-x-header-bg": "var(--table-x-header-bg, #f9fafb)",
-        "--table-x-hover-bg": "var(--table-x-hover-bg, #f3f4f6)",
-      } as React.CSSProperties}
+      className={`table-x-container ${
+        bordered
+          ? "table-x-container--bordered"
+          : "table-x-container--borderless"
+      } ${className}`}
+      style={
+        {
+          // CSS variables for theming
+          "--table-x-sticky-bg": "var(--table-x-bg, #fff)",
+          "--table-x-border-color": "var(--table-x-border-color, #e5e7eb)",
+          "--table-x-border-width": "var(--table-x-border-width, 1px)",
+          "--table-x-header-bg": "var(--table-x-header-bg, #f9fafb)",
+          "--table-x-hover-bg": "var(--table-x-hover-bg, #f3f4f6)",
+        } as React.CSSProperties
+      }
     >
       <div
-        className={`table-x-wrapper ${hasVerticalScroll ? "table-x-wrapper--scrollable" : ""}`}
+        className={`table-x-wrapper ${
+          hasVerticalScroll ? "table-x-wrapper--scrollable" : ""
+        }`}
         style={{
           overflowX: "auto",
           overflowY: hasVerticalScroll ? "auto" : "visible",
@@ -175,7 +186,9 @@ export function DataTable<TData>({
         }}
       >
         <table
-          className={`table-x-table ${bordered ? "table-x-table--bordered" : "table-x-table--borderless"}`}
+          className={`table-x-table ${
+            bordered ? "table-x-table--bordered" : "table-x-table--borderless"
+          }`}
           role="table"
           aria-label="Data table"
           style={{
@@ -194,6 +207,12 @@ export function DataTable<TData>({
             sticky={stickyHeader}
             stickyFirstColumn={stickyFirstColumn}
             bordered={bordered}
+            selectionEnabled={table.selection.enabled}
+            selectionMode={table.selection.mode}
+            isAllSelected={table.selection.isAllSelected}
+            isIndeterminate={table.selection.isIndeterminate}
+            onSelectAll={table.selection.selectAll}
+            onDeselectAll={table.selection.deselectAll}
           />
           <TableBody
             data={table.paginatedData}
@@ -208,10 +227,14 @@ export function DataTable<TData>({
             loadingComponent={slots.loader}
             errorComponent={slots.error}
             bordered={bordered}
+            selectionEnabled={table.selection.enabled}
+            selectionMode={table.selection.mode}
+            isRowSelected={table.selection.isSelected}
+            onToggleRowSelection={table.selection.toggle}
           />
         </table>
       </div>
-      
+
       {/* TODO: Add footer with pagination controls */}
       {/* TODO: Add column visibility toggle UI */}
       {/* TODO: Add export functionality */}
