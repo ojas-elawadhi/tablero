@@ -328,6 +328,8 @@ export interface TableInstance<TData> {
     toggleVisibility: (columnId: string) => void;
     /** Set column visibility */
     setVisibility: (columnId: string, visible: boolean) => void;
+    /** Set all column visibility at once */
+    setAllVisibility: (visibility: Record<string, boolean>) => void;
     /** Reorder columns */
     reorder: (columnOrder: string[]) => void;
   };
@@ -1166,6 +1168,13 @@ export function useDataTable<TData>(
     [currentColumnVisibility, updateColumnVisibilityState]
   );
 
+  const setAllColumnVisibility = useCallback(
+    (visibility: Record<string, boolean>) => {
+      updateColumnVisibilityState(visibility);
+    },
+    [updateColumnVisibilityState]
+  );
+
   const reorderColumns = useCallback(
     (columnOrder: string[]) => {
       updateColumnOrderState(columnOrder);
@@ -1416,6 +1425,7 @@ export function useDataTable<TData>(
       columnManagement: {
         toggleVisibility: toggleColumnVisibility,
         setVisibility: setColumnVisibility,
+        setAllVisibility: setAllColumnVisibility,
         reorder: reorderColumns,
       },
       selection: {

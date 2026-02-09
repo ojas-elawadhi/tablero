@@ -48,6 +48,13 @@ interface User {
   age: number;
 }
 
+// Your data array
+const users: User[] = [
+  { id: 1, name: "Alice", email: "alice@example.com", age: 28 },
+  { id: 2, name: "Bob", email: "bob@example.com", age: 34 },
+  // ... more users
+];
+
 const columns = defineColumns<User>()([
   col("name", { header: "Name", sortable: true }),
   col("email", { header: "Email", sortable: true, filter: "text" }),
@@ -393,6 +400,20 @@ const table = useDataTable({
 ```tsx
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useDataTable, createNextAppRouterAdapter } from "tablero/react";
+import { defineColumns, col } from "tablero/core";
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
+// Your data (could come from props, API, etc.)
+const users: User[] = [/* ... */];
+const columns = defineColumns<User>()([
+  col("name", { header: "Name", sortable: true }),
+  col("email", { header: "Email" }),
+]);
 
 function NextJsTable() {
   const searchParams = useSearchParams();
@@ -407,9 +428,9 @@ function NextJsTable() {
       routerAdapter: createNextAppRouterAdapter(searchParams, router, pathname),
       paramNames: {
         page: "p",
-        sortColumn: "sort",
+        sortColumn: "orderBy", // Custom param name (default: "sort")
         sortDir: "dir",
-        globalFilter: "q",
+        globalFilter: "search", // Custom param name (default: "q")
       },
     },
   });
@@ -426,10 +447,10 @@ urlSync: {
   paramNames: {
     page: "page",
     pageSize: "size",
-    sortColumn: "sort",
-    sortDir: "direction",
-    globalFilter: "search",
-    columnFilterPrefix: "filter_",
+    sortColumn: "orderBy", // Custom sort column param (default: "sort")
+    sortDir: "direction", // Custom sort direction param (default: "sortDir")
+    globalFilter: "search", // Custom global filter param (default: "q")
+    columnFilterPrefix: "col_", // Custom column filter prefix (default: "filter_")
   },
 }
 ```
@@ -747,7 +768,7 @@ interface TableInstance<TData> {
 
 ## Styling
 
-The library uses CSS variables for easy theming. Import default styles or create your own:
+The library uses CSS variables for easy theming. The components come with default inline styles, but you can override them with CSS variables. Add these to your global CSS or component styles:
 
 ```css
 :root {
@@ -758,8 +779,11 @@ The library uses CSS variables for easy theming. Import default styles or create
   --table-x-border-width: 1px;
   --table-x-hover-bg: #f3f4f6;
   --table-x-text-color: #111827;
+  --table-x-header-text-color: #374151;
 }
 ```
+
+**Note:** The library doesn't export a CSS file. All styles are applied via inline styles and CSS variables. You can customize the appearance by overriding the CSS variables above.
 
 ### Custom Styles
 

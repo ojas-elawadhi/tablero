@@ -4,7 +4,7 @@
 
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { DataTableExample } from "./react-example";
+import { BasicExample } from "./basic-example";
 
 const rootElement = document.getElementById("root");
 
@@ -15,7 +15,7 @@ if (!rootElement) {
 const root = createRoot(rootElement);
 root.render(
   <React.StrictMode>
-    <DataTableExample />
+    <BasicExample />
   </React.StrictMode>
 );
 

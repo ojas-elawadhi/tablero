@@ -15,3 +15,6 @@ export type { TableBodyProps } from "./TableBody";
 
 export { TableCell } from "./TableCell";
 export type { TableCellProps } from "./TableCell";
+
+export { ColumnManager } from "./ColumnManager";
+export type { ColumnManagerProps, ColumnManagerStyles } from "./ColumnManager";
